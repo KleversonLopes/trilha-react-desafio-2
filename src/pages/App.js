@@ -9,45 +9,47 @@ import { api } from '../services/api';
 import { Container } from './styles';
 
 function App() {
+    const [currentRepo, setCurrentRepo] = useState('');
+    const [repos, setRepos] = useState([]);
 
-  const [currentRepo, setCurrentRepo] = useState('');
-  const [repos, setRepos] = useState([]);
+    const handleSearchRepo = async () => {
+        try { 
+            const {data} = await api.get(`repos/${currentRepo}`)
+            if (data.id) {
+                const isExist = repos.find(repo => repo.id === data.id);
 
-
-  const handleSearchRepo = async () => {
-
-    const {data} = await api.get(`repos/${currentRepo}`)
-
-    if(data.id){
-
-      const isExist = repos.find(repo => repo.id === data.id);
-
-      if(!isExist){
-        setRepos(prev => [...prev, data]);
-        setCurrentRepo('')
-        return
-      }
-
+                if (!isExist) {
+                    setRepos(prev => [...prev, data]);
+                    setCurrentRepo('')
+                } else {
+                    alert('Repositório já adicionado');
+                }
+            }
+        } catch (E) {
+            if (E.response.status = 404)
+                alert('Repositório não encontrado')
+            else
+                alert(`Erro: ${E}`);
+        };
     }
-    alert('Repositório não encontrado')
 
-  }
+    const handleRemoveRepo = (id) => {
+        console.log('Removendo registro', id);
 
-  const handleRemoveRepo = (id) => {
-    console.log('Removendo registro', id);
+        // utilizar filter.
+        const Result = repos.filter(repo => repo.id !== id);
+        setRepos(Result);
+    }
 
-    // utilizar filter.
-  }
 
-
-  return (
-    <Container>
-      <img src={gitLogo} width={72} height={72} alt="github logo"/>
-      <Input value={currentRepo} onChange={(e) => setCurrentRepo(e.target.value)} />
-      <Button onClick={handleSearchRepo}/>
-      {repos.map(repo => <ItemRepo handleRemoveRepo={handleRemoveRepo} repo={repo}/>)}
-    </Container>
-  );
+    return (
+        <Container>
+            <img src={gitLogo} width={72} height={72} alt="github logo"/>
+            <Input value={currentRepo} onChange={(e) => setCurrentRepo(e.target.value)} />
+            <Button onClick={handleSearchRepo}/>
+            {repos.map(repo => <ItemRepo handleRemoveRepo={handleRemoveRepo} repo={repo}/>)}
+        </Container>
+    );
 }
 
 export default App;
